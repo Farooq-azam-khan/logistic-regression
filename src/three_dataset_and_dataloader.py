@@ -14,7 +14,6 @@ class CustomDataset(Dataset):
         Custom dataset for logistic regression.
 
         :param n_samples: Number of samples per class (default: 500)
-        :param device: Device to store tensors ('cpu', 'cuda', 'mps', etc.)
         """
 
         # Generate dataset
@@ -114,10 +113,11 @@ def train_logistic_regression(
 
 
 if __name__ == "__main__":
+    print(f"Running on {device=}")
     model, [loss_over_iter, accuray_over_iter] = train_logistic_regression(
         max_iter=100, learning_rate=0.1
     )
     print(
         f"Model(w={model.linear.weight.detach().numpy()}, b={model.linear.bias.detach().numpy()})"
     )
-    print(f"Accuracy={accuray_over_iter[-1]}")
+    print(f"Validation Accuracy={accuray_over_iter[-1]}")
