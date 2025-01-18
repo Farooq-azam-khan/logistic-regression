@@ -18,28 +18,29 @@ class LogisticRegression(nn.Module):
 
     def forward(self, X):
         # return nn.functional.sigmoid(X @ self.w.T + self.b)
-        return nn.functional.sigmoid(self.linear(X))
+        # return nn.functional.sigmoid(self.linear(X))
+        return self.linear(X)
 
 
 def train_logistic_regression(features, labels, max_iter=100, learning_rate=1e-1):
     model = LogisticRegression(features.shape[1])
-    loss_fn = nn.BCELoss()
-    optimizer = torch.optim.SGD(
-        [p for p in model.linear.parameters()], lr=learning_rate
-    )
+    # loss_fn = nn.BCELoss()
+    loss_fn = nn.BCEWithLogitsLoss()  # numerically stable loss function
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
     loss_over_iter = []
     accurary_over_iter = []
 
     for _ in tqdm(range(max_iter)):
         optimizer.zero_grad()
-        predictions = model(features)
-        loss = loss_fn(predictions, labels)
+        logits = model(features)
+        loss = loss_fn(logits, labels)
         loss.backward()
         optimizer.step()
         loss_over_iter.append(loss.item())
 
-        acc = accuracy(predictions, labels)
-        accurary_over_iter.append(acc.item())
+        with torch.no_grad():
+            acc = accuracy(torch.sigmoid(logits), labels)
+            accurary_over_iter.append(acc.item())
 
     return model, [loss_over_iter, accurary_over_iter]
 
