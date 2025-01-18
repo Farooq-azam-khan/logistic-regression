@@ -12,17 +12,21 @@ def accuracy(predictions, labels):
 class LogisticRegression(nn.Module):
     def __init__(self, feature_dim: int = 2) -> None:
         super().__init__()
-        self.w = torch.zeros((1, feature_dim), requires_grad=True)
-        self.b = torch.tensor(0.0, requires_grad=True)
+        # self.w = torch.zeros((1, feature_dim), requires_grad=True)
+        # self.b = torch.tensor(0.0, requires_grad=True)
+        self.linear = nn.Linear(feature_dim, 1, bias=True)
 
     def forward(self, X):
-        return nn.functional.sigmoid(X @ self.w.T + self.b)
+        # return nn.functional.sigmoid(X @ self.w.T + self.b)
+        return nn.functional.sigmoid(self.linear(X))
 
 
 def train_logistic_regression(features, labels, max_iter=100, learning_rate=1e-1):
     model = LogisticRegression(features.shape[1])
     loss_fn = nn.BCELoss()
-    optimizer = torch.optim.SGD([model.w, model.b], lr=learning_rate)
+    optimizer = torch.optim.SGD(
+        [p for p in model.linear.parameters()], lr=learning_rate
+    )
     loss_over_iter = []
     accurary_over_iter = []
 
@@ -46,5 +50,7 @@ if __name__ == "__main__":
     model, [loss_over_iter, accuray_over_iter] = train_logistic_regression(
         features, labels, max_iter=100, learning_rate=0.1
     )
-    print(f"Model(w={model.w.detach().numpy()}, b={model.b.item()})")
+    print(
+        f"Model(w={model.linear.weight.detach().numpy()}, b={model.linear.bias.detach().numpy()})"
+    )
     print(f"Accuracy={accuray_over_iter[-1]}")
